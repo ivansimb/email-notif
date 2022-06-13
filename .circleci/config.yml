@@ -1,9 +1,37 @@
 version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:15.0.1
+    steps:
+      - checkout
+      - run:
+          command: find . -name 'pom.xml' | sort | xargs cat > /tmp/maven_cache_seed
+          working_directory: ~/project
+      - restore_cache:
+          key: circleci-java-maven-{{ checksum "/tmp/maven_cache_seed" }}
+      - run:
+          command: mvn -Puat clean package
+          working_directory: ~/project
+      - save_cache:
+          paths:
+            - ~/.m2/repository
+          key: circleci-java-maven-{{ checksum "/tmp/maven_cache_seed" }}
+      - store_test_results:
+          path: ~/project/target/as-0.0.1.jar
+      - store_artifacts:
+          path: ~/project/target/as-0.0.1.jar
 orbs:
   email: cinotify/email@1.2.0
 workflows:
   example-workflow:
     jobs:
+      - build:
+          requires:
+            - email/send
       - email/send:
           body: 'Configure this notification at https://www.cinotify.cc/'
           subject: CircleCI job started
