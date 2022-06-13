@@ -23,15 +23,3 @@ jobs:
           path: ~/project/target/as-0.0.1.jar
       - store_artifacts:
           path: ~/project/target/as-0.0.1.jar
-orbs:
-  email: cinotify/email@1.2.0
-workflows:
-  example-workflow:
-    jobs:
-      - build:
-          requires:
-            - email/send
-      - email/send:
-          body: 'Configure this notification at https://www.cinotify.cc/'
-          subject: CircleCI job started
-          to: ivan.simbolon@gmail.com
